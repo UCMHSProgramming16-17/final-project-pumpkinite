@@ -1,5 +1,4 @@
-Prescription drug information by doctor in the U.S. 2014
+Prescription drug data in the U.S., 2014 (only represents beneficiaries enrolled in the Medicare Part D prescription drug program)
 
-* histogram showing number of prescriptions for top 10 prescribed drugs
-* average number of prescriptions per doctor over all US states
+* average number of prescriptions per doctor over all US states (map of US, with states colored on a gradient)
 * average number of prescriptions per doctor over various disciplines of medicine

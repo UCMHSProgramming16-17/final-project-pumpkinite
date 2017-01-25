@@ -5,7 +5,7 @@ from bokeh.models import (
     HoverTool,
     LogColorMapper
 )
-from bokeh.palettes import Inferno6 as palette
+from bokeh.palettes import Inferno10 as palette
 from bokeh.plotting import figure
 
 # import data
@@ -14,7 +14,18 @@ df = pd.read_csv('prescriber-info.csv')
 
 ### data analysis
 
+# create dictionary to relate states (postal codes) and avg prescriptions per doctor
+prescriptions = {}
 
+# add column showing total drug prescriptions for each doctor
+df["Total"] = df.sum(axis=1) - df["NPI"] - df["Opioid.Prescriber"]
+
+# find average number of prescriptions per doctor for each state
+for code in states:
+    # select doctors in the specified state and create new dataframe with only the total column
+    statedf = df.loc[df["State"] == code]["Total"]
+    # find average prescriptions per doctor in the specified state
+    prescriptions[code] = float(statedf.sum()) / float(statedf.count())
 
 ### visualization
 
@@ -32,14 +43,14 @@ state_ys = [states[code]["lats"] for code in states]
 
 # set up state info (name, avg prescription rate)
 state_names = [state['name'] for state in states.values()]
-#state_rates = [prescriptions[code] for code in states]
+state_rates = [int(prescriptions[code]) for code in states]
 
 # organize the data
 source = ColumnDataSource(data=dict(
     x=state_xs,
     y=state_ys,
     name=state_names,
-    #rate=state_rates,
+    rate=state_rates
 ))
 
 # toolbar
@@ -55,16 +66,15 @@ p.grid.grid_line_color = None
 
 # plot the states
 p.patches('x', 'y', source=source,
-          fill_color="red",
-          #{'field': 'rate', 'transform': color_mapper},
-          fill_alpha=0.7, line_color="white", line_width=0.5)
+          fill_color={'field': 'rate', 'transform': color_mapper},
+          line_color="white", line_width=0.5)
 
 # set up hovering tooltips
 hover = p.select_one(HoverTool)
 hover.point_policy = "follow_mouse"
 hover.tooltips = [
     ("Name", "@name"),
-    #("Avg. prescriptions per doctor", "@rate%"),
+    ("Avg. prescriptions per doctor", "@rate"),
     ("(Long, Lat)", "($x, $y)"),
 ]
 

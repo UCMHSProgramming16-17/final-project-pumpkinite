@@ -3,7 +3,7 @@ import pandas as pd
 
 from bokeh.plotting import figure, show
 from bokeh.models import HoverTool, ColumnDataSource, LogColorMapper
-from bokeh.palettes import Viridis6 as palette
+from bokeh.palettes import Inferno10 as palette
 
 # import data
 df = pd.read_csv('prescriber-info.csv')
@@ -20,9 +20,8 @@ drugs = [name for name in df.columns.values]
 # clean drugs list
 del drugs[0:4]
 
-# create empty matrix to store counts and percentages in
+# create empty matrix to store counts
 counts = np.zeros((len(specialties), len(drugs)))
-drugpercents = np.zeros((len(specialties), len(drugs)))
 # iterate through specialties
 for specialty in specialties:
     # select only doctors with the specified specialty and isolate drug data
@@ -31,40 +30,32 @@ for specialty in specialties:
     
     # iterate through drugs
     for drug in drugs:
-        # assign values for 
-        # (1) total prescriptions for specified drug within specified specialty
-        # (2) percentage that the specified drug makes up of total prescriptions within specified specialty
+        # assign count value (total prescriptions for specified drug within specified specialty)
         counts[specialties.index(specialty), drugs.index(drug)] = specdf[drug].sum()
-        drugpercents[specialties.index(specialty), drugs.index(drug)] = float(specdf[drug].sum()) / float(specdf.values.sum())
 
 ### visualization
 
 # set up lists for data points
 drugsdata=[]
 specialtiesdata=[]
-alpha=[] # lower percentage -> more transparent square
-count=[] # higher count -> darker color square
+count=[] # higher count -> square will be darker
 
 # set up color gradient
 palette.reverse()
 color_mapper = LogColorMapper(palette=palette)
 
-# determine data points and corresponding alpha value
+# determine data points and add to lists
 for i in range(0,len(drugs)):
     for j in range(0,len(specialties)):
         drugsdata.append(drugs[i])
         specialtiesdata.append(specialties[j])
         count.append(counts[j, i])
         
-        alpha.append(drugpercents[j, i])
-        
-        
 # organize the data
 source = ColumnDataSource(data=dict(
     x=drugsdata,
     y=specialtiesdata,
     count=count,
-    alphas=alpha
 ))
 
 # toolbar
@@ -86,16 +77,14 @@ p.xaxis.major_label_orientation = np.pi/3
 # draw squares
 p.rect('x', 'y', 1.5, 1.5, source=source,
        fill_color={'field': 'count', 'transform': color_mapper}, 
-       hover_color={'field': 'count', 'transform': color_mapper}, 
-       color="black", alpha='alphas',
+       hover_color={'field': 'count', 'transform': color_mapper},
        line_color=None, hover_line_color='black')
 
 # set up hovering tooltips
 p.select_one(HoverTool).tooltips = [
     ('Specialty', '@y'),
     ('Drug', '@x'),
-    ('Number of prescriptions', '@count'),
-    ('Fraction of prescriptions in this field', '@alphas')
+    ('Number of prescriptions', '@count')
 ]
 
 # show chart

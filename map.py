@@ -1,10 +1,6 @@
 import pandas as pd
 from bokeh.io import show
-from bokeh.models import (
-    ColumnDataSource,
-    HoverTool,
-    LogColorMapper
-)
+from bokeh.models import ColumnDataSource, HoverTool, LogColorMapper
 from bokeh.palettes import Inferno10 as palette
 from bokeh.plotting import figure
 
